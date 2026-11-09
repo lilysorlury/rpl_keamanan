@@ -1,45 +1,53 @@
 import 'package:flutter/material.dart';
 
 import '../models/user.dart';
+import '../config/dependency_provider.dart';
 import '../repositories/user_repository.dart';
-import '../repositories/user_repository_impl.dart';
 import '../widgets/user_card.dart';
 
-/// Halaman untuk menampilkan daftar pengguna.
-///
-/// Halaman ini menggunakan [UserRepository] untuk mengambil data,
-/// sehingga UI tidak bergantung langsung pada [ApiService].
 class UserListScreen extends StatefulWidget {
-  final UserRepository? repository;
-  const UserListScreen({super.key, this.repository});
+  const UserListScreen({super.key});
+
   @override
   State<UserListScreen> createState() => _UserListScreenState();
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  late final UserRepository _repository;
+  late UserRepository _repository;
+
   List<User> _users = [];
   bool _isLoading = true;
   String? _errorMessage;
+
   @override
-  void initState() {
-    super.initState();
-    _repository = widget.repository ?? UserRepositoryImpl();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _repository = DependencyProvider.of(context).userRepository;
+
     _loadUsers();
   }
 
   Future<void> _loadUsers() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
+
     try {
       final users = await _repository.getUsers();
+
+      if (!mounted) return;
+
       setState(() {
         _users = users;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -79,10 +87,11 @@ class _UserListScreenState extends State<UserListScreen> {
         ),
       );
     }
+
     if (_errorMessage != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -93,11 +102,7 @@ class _UserListScreenState extends State<UserListScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
-              ),
+              Text(_errorMessage!, textAlign: TextAlign.center),
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _loadUsers,
@@ -109,15 +114,18 @@ class _UserListScreenState extends State<UserListScreen> {
         ),
       );
     }
+
     if (_users.isEmpty) {
       return const Center(child: Text('Tidak ada data pengguna'));
     }
+
     return RefreshIndicator(
       onRefresh: _loadUsers,
       child: ListView.builder(
         itemCount: _users.length,
         itemBuilder: (context, index) {
           final user = _users[index];
+
           return UserCard(user: user, onTap: () => _showUserDetail(user));
         },
       ),
@@ -128,7 +136,7 @@ class _UserListScreenState extends State<UserListScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) => Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

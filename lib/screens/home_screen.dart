@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'user_list_screen.dart';
+import 'post_list_screen.dart';
 
 /// Halaman utama aplikasi.
 class HomeScreen extends StatelessWidget {
@@ -32,14 +33,31 @@ class HomeScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
+
+              // Tombol daftar pengguna
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).push(
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(builder: (_) => const UserListScreen()),
                   );
                 },
                 icon: const Icon(Icons.people),
                 label: const Text('Lihat Daftar Pengguna'),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Tombol daftar postingan
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PostListScreen()),
+                  );
+                },
+                icon: const Icon(Icons.article),
+                label: const Text('Lihat Daftar Postingan'),
               ),
             ],
           ),
