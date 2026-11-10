@@ -1,31 +1,53 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Service pembungkus [FlutterSecureStorage] (dari pertemuan sebelumnya).
-///
-/// Dipakai untuk menyimpan data sensitif seperti token secara terenkripsi.
 class SecureStorageService {
-  final FlutterSecureStorage _storage;
-
-  SecureStorageService({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
-
-  /// Menyimpan [value] dengan kunci [key].
-  Future<void> write(String key, String value) {
-    return _storage.write(key: key, value: value);
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+  // Key yang digunakan
+  static const String _tokenKey = 'auth_token';
+  static const String _pinKey = 'user_pin';
+  // Menyimpan token
+  Future<void> saveToken(String token) async {
+    await _storage.write(key: _tokenKey, value: token);
+    // ✅ Logging aman: tidak mencetak token
+    print('Token berhasil disimpan');
   }
 
-  /// Membaca nilai berdasarkan [key]. Mengembalikan `null` jika tidak ada.
-  Future<String?> read(String key) {
-    return _storage.read(key: key);
+  // Membaca token
+  Future<String?> getToken() async {
+    final token = await _storage.read(key: _tokenKey);
+    // ✅ Logging aman: hanya menyebutkan status
+    print(token != null ? 'Token ditemukan' : 'Token tidak ditemukan');
+    return token;
   }
 
-  /// Menghapus nilai berdasarkan [key].
-  Future<void> delete(String key) {
-    return _storage.delete(key: key);
+  // Menghapus token
+  Future<void> deleteToken() async {
+    await _storage.delete(key: _tokenKey);
+    print('Token berhasil dihapus');
   }
 
-  /// Menghapus semua data yang tersimpan.
-  Future<void> clearAll() {
-    return _storage.deleteAll();
+  // Menyimpan PIN
+  Future<void> savePin(String pin) async {
+    await _storage.write(key: _pinKey, value: pin);
+    print('PIN berhasil disimpan');
+  }
+
+  // Membaca PIN
+  Future<String?> getPin() async {
+    return await _storage.read(key: _pinKey);
+  }
+
+  // Menghapus semua data
+  Future<void> deleteAll() async {
+    await _storage.deleteAll();
+    print('Semua data berhasil dihapus');
+  }
+
+  // Cek keberadaan token
+  Future<bool> hasToken() async {
+    return await _storage.containsKey(key: _tokenKey);
   }
 }

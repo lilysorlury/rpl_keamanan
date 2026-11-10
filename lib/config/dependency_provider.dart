@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 import 'dependency_injector.dart';
 
 class DependencyProvider extends InheritedWidget {
@@ -8,16 +8,20 @@ class DependencyProvider extends InheritedWidget {
   const DependencyProvider({
     super.key,
     required this.dependencies,
-    required super.child,
-  });
+    required Widget child,
+  }) : super(child: child);
 
   static DependencyInjector of(BuildContext context) {
     final provider = context
         .dependOnInheritedWidgetOfExactType<DependencyProvider>();
 
-    assert(provider != null, 'DependencyProvider tidak ditemukan');
+    if (provider == null) {
+      throw FlutterError(
+        'DependencyProvider tidak ditemukan di widget tree.',
+      );
+    }
 
-    return provider!.dependencies;
+    return provider.dependencies;
   }
 
   @override
